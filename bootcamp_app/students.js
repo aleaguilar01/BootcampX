@@ -11,17 +11,23 @@ const pool = new Pool({
  * query to obtain students with student id, name and cohort.
  */
 
+const cohortName = process.argv[2];
+const limit = process.argv[3] || 5;
+const values = [`%${cohortName}%`, limit];
+
+const queryString =  `
+SELECT students.id, students.name, cohorts.name as cohort_name
+FROM students
+JOIN cohorts
+ON cohort_id = cohorts.id
+WHERE cohorts.name LIKE $1
+LIMIT $2;
+`;
+
+console.log(queryString);
+
 pool
-  .query(
-    `
-    SELECT students.id, students.name, cohorts.name as cohort_name
-    FROM students
-    JOIN cohorts
-    ON cohort_id = cohorts.id
-    WHERE cohorts.name LIKE '%${process.argv[2]}%'
-    LIMIT ${process.argv[3] || 5};
-    `
-  )
+  .query(queryString, values)
   .then((res)=> {
     res.rows.forEach((user) => {
       console.log(
